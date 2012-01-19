@@ -30,7 +30,7 @@ print srcs
 cmake = cmake.replace('#### Sources', '#### Sources\n'+srcs)
 
 
-test = 'ADD_LIBPIPE_TEST("'+classname+'" test_'+classname.lower()+' ${SRCS_'+classname.upper()+'})'
+test = 'ADD_LIBIPACA_TEST("'+classname+'" test_'+classname.lower()+' ${SRCS_'+classname.upper()+'})'
 print test
 cmake = cmake.replace('#### Tests', '#### Tests\n'+test)
 
