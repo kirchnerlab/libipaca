@@ -20,6 +20,9 @@ get_git_head_revision(GIT_REFSPEC LIBIPACA_VERSION)
 # Varaibles to upper string for easier comparisions
 #############################################################################
 
+IF(NOT CMAKE_BUILD_TYPE)
+    SET(CMAKE_BUILD_TYPE "RelWithDebInfo")
+ENDIF(NOT CMAKE_BUILD_TYPE)
 STRING(TOUPPER ${CMAKE_BUILD_TYPE} CMAKE_BUILD_TYPE)
 
 #############################################################################
@@ -50,8 +53,8 @@ endif(CMAKE_COMPILER_IS_GNUCXX)
 # Cmake generated header files
 #############################################################################
 CONFIGURE_FILE(
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/libipaca/config.hpp.cmake 
-    ${LIBIPACA_BINARY_DIR}/include/libipaca/config.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/ipaca/config.hpp.cmake 
+    ${LIBIPACA_BINARY_DIR}/include/ipaca/config.hpp
 )
 
 #############################################################################
@@ -203,7 +206,7 @@ INSTALL(DIRECTORY ${LIBIPACA_BINARY_DIR}/doc
 ##############################################################################
 ## exporting libipaca
 ##############################################################################
-get_target_property(LIBIPACA_LIBRARY pipe LOCATION)
+get_target_property(LIBIPACA_LIBRARY ipaca LOCATION)
 
 get_filename_component(LIBIPACA_INSTALL_LIBRARY ${LIBIPACA_LIBRARY} NAME)
 
@@ -214,10 +217,10 @@ configure_file(
     "${PROJECT_SOURCE_DIR}/cmake/macros/libipacaConfig.cmake.in"
     "${PROJECT_BINARY_DIR}/InstallFiles/libipacaConfig.cmake")
    
-export(TARGETS pipe
+export(TARGETS ipaca
   FILE "${PROJECT_BINARY_DIR}/InstallFiles/libipacaLibraryDepends.cmake")
  
-export(PACKAGE libipaca)
+export(PACKAGE ipaca)
     
 if (UNIX)    
     INSTALL(FILES "${PROJECT_BINARY_DIR}/InstallFiles/libipacaConfig.cmake" DESTINATION /lib/libipaca/)
