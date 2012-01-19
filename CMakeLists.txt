@@ -142,7 +142,7 @@ ENDIF (ENABLE_TESTING)
 # build libipaca
 #############################################################################
 
-ADD_SUBDIRECTORY(src)
+#ADD_SUBDIRECTORY(src)
 
 ############################################################################
 # examples
@@ -206,30 +206,30 @@ INSTALL(DIRECTORY ${LIBIPACA_BINARY_DIR}/doc
 ##############################################################################
 ## exporting libipaca
 ##############################################################################
-get_target_property(LIBIPACA_LIBRARY ipaca LOCATION)
-
-get_filename_component(LIBIPACA_INSTALL_LIBRARY ${LIBIPACA_LIBRARY} NAME)
-
-set (LIBIPACA_LIBRARY ${CMAKE_INSTALL_PREFIX}/lib/${LIBIPACA_INSTALL_LIBRARY})
-set (LIBIPACA_INCLUDE ${CMAKE_INSTALL_PREFIX}/include)
-
-configure_file(
-    "${PROJECT_SOURCE_DIR}/cmake/macros/libipacaConfig.cmake.in"
-    "${PROJECT_BINARY_DIR}/InstallFiles/libipacaConfig.cmake")
-   
-export(TARGETS ipaca
-  FILE "${PROJECT_BINARY_DIR}/InstallFiles/libipacaLibraryDepends.cmake")
- 
-export(PACKAGE ipaca)
-    
-if (UNIX)    
-    INSTALL(FILES "${PROJECT_BINARY_DIR}/InstallFiles/libipacaConfig.cmake" DESTINATION /lib/libipaca/)
-    INSTALL(FILES "${PROJECT_BINARY_DIR}/InstallFiles/libipacaLibraryDepends.cmake" DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/libipaca/cmake/)
-elseif(WIN32)
-    INSTALL(FILES "${PROJECT_BINARY_DIR}/InstallFiles/libipacaConfig.cmake" DESTINATION /cmake/)
-    INSTALL(FILES "${PROJECT_BINARY_DIR}/InstallFiles/libipacaLibraryDepends.cmake" DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/libipaca/cmake/)
-    
-endif()
+#get_target_property(LIBIPACA_LIBRARY ipaca LOCATION)
+#
+#get_filename_component(LIBIPACA_INSTALL_LIBRARY ${LIBIPACA_LIBRARY} NAME)
+#
+#set (LIBIPACA_LIBRARY ${CMAKE_INSTALL_PREFIX}/lib/${LIBIPACA_INSTALL_LIBRARY})
+#set (LIBIPACA_INCLUDE ${CMAKE_INSTALL_PREFIX}/include)
+#
+#configure_file(
+#    "${PROJECT_SOURCE_DIR}/cmake/macros/libipacaConfig.cmake.in"
+#    "${PROJECT_BINARY_DIR}/InstallFiles/libipacaConfig.cmake")
+#   
+#export(TARGETS ipaca
+#  FILE "${PROJECT_BINARY_DIR}/InstallFiles/libipacaLibraryDepends.cmake")
+# 
+#export(PACKAGE ipaca)
+#    
+#if (UNIX)    
+#    INSTALL(FILES "${PROJECT_BINARY_DIR}/InstallFiles/libipacaConfig.cmake" DESTINATION /lib/libipaca/)
+#    INSTALL(FILES "${PROJECT_BINARY_DIR}/InstallFiles/libipacaLibraryDepends.cmake" DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/libipaca/cmake/)
+#elseif(WIN32)
+#    INSTALL(FILES "${PROJECT_BINARY_DIR}/InstallFiles/libipacaConfig.cmake" DESTINATION /cmake/)
+#    INSTALL(FILES "${PROJECT_BINARY_DIR}/InstallFiles/libipacaLibraryDepends.cmake" DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/libipaca/cmake/)
+#    
+#endif()
 
 ##############################################################################
 ## packaging

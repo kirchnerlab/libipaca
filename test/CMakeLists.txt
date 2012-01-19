@@ -20,7 +20,7 @@ MACRO(ADD_LIBIPACA_TEST name exe src)
     ADD_EXECUTABLE(${exe} ${src})
     
     SET(TEST_LIBS  
-        ipaca
+        #        ipaca
         #${Boost_LIBRARIES}
     )
 
@@ -51,8 +51,10 @@ INCLUDE_DIRECTORIES(
 )
 
 #### Sources
+SET(SRCS_STOICHIOMETRYVIEW StoichiometryView-test.cpp)
 
 #### Tests
+ADD_LIBIPACA_TEST("StoichiometryView" test_stoichiometryview ${SRCS_STOICHIOMETRYVIEW})
 
 LIST(LENGTH memtest_names numtests)
 IF(numtests GREATER 0)
