@@ -1,0 +1,34 @@
+#!/bin/bash
+
+cd @LIBIPACA_BINARY_DIR@
+
+make test
+
+mkdir -p @LIBIPACA_BINARY_DIR@/coverage
+
+#check if gcovr exists
+hash gcovr &> /dev/null
+if [ $? -eq 1 ]; 
+	then     echo >&2 "gcovr not found. Therfore no xml coverage output can be generated"; 
+else
+	gcovr -r @LIBIPACA_BINARY_DIR@ -f '.*libipaca' -e '.*test' -x > @LIBIPACA_BINARY_DIR@/coverage/coverage.xml
+fi
+
+#check if genhtml exists
+hash genhtml &> /dev/null
+if [ $? -eq 1 ]; 
+	then     echo >&2 "genhtml not found. Therfore no html coverage output can be generated"; 
+else
+
+	lcov --directory @LIBIPACA_BINARY_DIR@/test/CMakeFiles \
+	     --directory @LIBIPACA_BINARY_DIR@/src/CMakeFiles/ipaca.dir \
+	     --directory @LIBIPACA_BINARY_DIR@/src/CMakeFiles \
+	     -capture --output-file @LIBIPACA_BINARY_DIR@/coverage/ipaca.info
+	lcov --extract @LIBIPACA_BINARY_DIR@/coverage/ipaca.info '*libipaca*' -o @LIBIPACA_BINARY_DIR@/coverage/ipaca.info.extracted
+	lcov --remove @LIBIPACA_BINARY_DIR@/coverage/ipaca.info.extracted '*test*' -o @LIBIPACA_BINARY_DIR@/coverage/ipaca.info.extracted2
+	pushd @LIBIPACA_BINARY_DIR@/coverage/
+	genhtml --demangle-cpp --legend --show-details ipaca.info.extracted2
+	popd
+fi
+ 
+ 

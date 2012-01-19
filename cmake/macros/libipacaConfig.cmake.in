@@ -1,0 +1,22 @@
+# Find the libpipe includes and library
+#
+# LIBIPACA_INCLUDE_DIR - where to find libpipe.h
+# LIBIPACA_LIBRARIES - List of fully qualified libraries to link against
+#
+# LIBIPACA_FOUND - set to 1 if found
+#
+# Do not delete this file if you want to use find_package(libipaca)
+# in your cmake project
+
+
+include("@CMAKE_INSTALL_PREFIX@/lib/libpipe/cmake/libipacaLibraryDepends.cmake")     
+
+
+set (LIBIPACA_FOUND 1)
+
+set (LIBIPACA_INCLUDE_DIR "@LIBIPACA_INCLUDE@")
+
+set(LIBIPACA_LIBRARIES ipaca)
+
+set(libipaca_BUILD_SETTINGS_FILE  "@CMAKE_INSTALL_PREFIX@/lib/libpipe/libipacaLibraryDepends.cmake")
+
