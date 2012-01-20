@@ -34,6 +34,7 @@ template<typename T>
 class StoichiometryView
 {
 public:
+    typedef T viewed_type;
     typedef typename StoichiometryTraits<T>::iterator_type iterator;
     typedef typename StoichiometryTraits<T>::const_iterator_type
             const_iterator;
