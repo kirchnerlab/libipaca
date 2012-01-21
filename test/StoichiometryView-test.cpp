@@ -15,31 +15,19 @@
 //
 
 // define a simple stoichiometry class
-typedef std::map<int, double> MyStoichiometry;
+typedef std::pair<double, double> Isotope;
+typedef std::pair<int, std::vector<Isotope> > Element;
+typedef std::pair<Element, double> Entry;
+typedef std::vector<Entry> MyStoichiometry;
 
 // typedef the view
 typedef ipaca::StoichiometryView<MyStoichiometry> MyView;
 
-// accessors
-struct ElementAcc
-{
-    const MyStoichiometry::key_type& operator()(const MyStoichiometry::value_type& x)
-    {
-        return x.first;
-    }
-};
-
-struct CountAcc
-{
-    double& operator()(MyStoichiometry::value_type& x)
-    {
-        return x.second;
-    }
-    const double& operator()(const MyStoichiometry::value_type& x)
-    {
-        return x.second;
-    }
-};
+// forward decls of accessors
+struct IsotopesAcc;
+struct CountAcc;
+struct MzAcc;
+struct AbAcc;
 
 // Specialize the implementations for the view on MyStoichiometry.
 // This is an example of what needs to be done on the client side
@@ -55,15 +43,25 @@ struct StoichiometryTraits<MyStoichiometry>
     typedef MyStoichiometry::iterator iterator_type;
     typedef MyStoichiometry::const_iterator const_iterator_type;
     typedef MyStoichiometry::value_type value_type;
+
+    typedef MyStoichiometry StoichiometryContainerType;
+    typedef  MyStoichiometry::value_type StoichiometryEntryType;
+    typedef  std::vector<Isotope> IsotopeContainerType;
+    typedef  IsotopeContainerType::value_type IsotopeType;
+    typedef double CountType;
+
+    typedef  IsotopesAcc IsotopesAccessorType;
+    typedef  CountAcc CountAccessorType;
 };
 
-/** Define how the framework can access the contents of a stoichiometry.
- */
 template<>
-struct StoichiometryValueTraits<MyStoichiometry>
+struct IsotopesTraits<MyStoichiometry>
 {
-    typedef ElementAcc element_accessor;
-    typedef CountAcc count_accessor;
+    typedef  std::vector<Isotope> IsotopeContainerType;
+    typedef  IsotopeContainerType::value_type IsotopeType;
+
+    typedef  MzAcc MzAccessorType;
+    typedef  AbAcc AbAccessorType;
 };
 
 /** Test the simple \c MyStoichiometry implementation for nonnegativity.
@@ -79,7 +77,44 @@ bool ipaca::StoichiometryView<MyStoichiometry>::isNonNegative() const
     return true;
 }
 
-}
+} // namespace ipaca (for template specializations)
+
+struct IsotopesAcc
+{
+    const ipaca::StoichiometryTraits<MyStoichiometry>::IsotopeContainerType& operator()(
+        const ipaca::StoichiometryTraits<MyStoichiometry>::StoichiometryEntryType& x)
+    {
+        return x.first.second;
+    }
+};
+
+struct CountAcc
+{
+    const ipaca::StoichiometryTraits<MyStoichiometry>::CountType& operator()(
+        const ipaca::StoichiometryTraits<MyStoichiometry>::StoichiometryEntryType& x)
+    {
+        return x.second;
+    }
+};
+
+struct MzAcc
+{
+    const double& operator()(
+        const ipaca::StoichiometryTraits<MyStoichiometry>::IsotopeType& x)
+    {
+        return x.first;
+    }
+};
+
+struct AbAcc
+{
+    const double& operator()(
+        const ipaca::StoichiometryTraits<MyStoichiometry>::IsotopeType& x)
+    {
+        return x.second;
+    }
+};
+
 
 //
 // test suite
@@ -99,30 +134,40 @@ struct StoichiometryViewTestSuite : vigra::test_suite
     {
         add(testCase(&StoichiometryViewTestSuite::testConstructionAndRef));
         add(testCase(&StoichiometryViewTestSuite::testIteration));
+        add(testCase(&StoichiometryViewTestSuite::testIterationIsotopes));
     }
 
     /** Little helper function that add H2O (water) to a stoichiometry.
      * @param[inout] s The stoichiometry.
      */
-    void addH2O(MyStoichiometry& s)
+    MyStoichiometry createH2O()
     {
-        s[1] += 2.0;
-        s[16] += 1.0;
+        std::vector<Isotope> isoDistH;
+        isoDistH.push_back(std::make_pair(1.0, 0.99));
+        isoDistH.push_back(std::make_pair(2.0, 0.01));
+        Entry h = std::make_pair(std::make_pair(1, isoDistH), 2.0);
+        std::vector<Isotope> isoDistO;
+        isoDistO.push_back(std::make_pair(16.0, 0.97));
+        isoDistO.push_back(std::make_pair(17.0, 0.01));
+        isoDistO.push_back(std::make_pair(18.0, 0.02));
+        Entry o = std::make_pair(std::make_pair(16, isoDistO), 1.0);
+        MyStoichiometry s;
+        s.push_back(h);
+        s.push_back(o);
+        return s;
     }
 
     void testConstructionAndRef()
     {
-        MyStoichiometry stoi;
+        MyStoichiometry stoi = createH2O();
         // Construct the view
         MyView v(stoi);
-        // Edit the underlying object and see if we pick it up.
-        addH2O(stoi);
         shouldEqual(stoi.size(), static_cast<size_t>(2));
         shouldEqual(v.isNonNegative(), true);
         // Construct a copy through the view.
         MyStoichiometry stoi2(v.ref());
         shouldEqual(stoi.size(), stoi2.size());
-        stoi[1] = -1.0;
+        stoi[1].second = -1.0;
         shouldEqual(v.isNonNegative(), false);
         // test addresses of ref()
         MyView v2(stoi);
@@ -135,28 +180,40 @@ struct StoichiometryViewTestSuite : vigra::test_suite
 
     void testIteration()
     {
-        MyStoichiometry stoi;
-        addH2O(stoi);
+        MyStoichiometry stoi = createH2O();
         MyView v(stoi);
         typedef MyView::const_iterator CI;
-        ipaca::StoichiometryValueTraits<MyStoichiometry>::element_accessor
-                eAcc;
-        ipaca::StoichiometryValueTraits<MyStoichiometry>::count_accessor cAcc;
-        int elems[] = {1, 16};
-        double counts[] = {2, 1};
+        ipaca::StoichiometryTraits<MyStoichiometry>::CountAccessorType cAcc;
+        double counts[] = { 2, 1 };
         size_t k = 0;
         for (CI i = v.begin(); i != v.end(); ++i, ++k) {
-            shouldEqual(eAcc(*i), elems[k]);
             shouldEqual(cAcc(*i), counts[k]);
         }
-        typedef MyView::iterator IT;
-        for (IT i = v.begin(); i != v.end(); ++i) {
-            cAcc(*i) = 27.3;
-        }
+    }
+
+    void testIterationIsotopes()
+    {
+        MyStoichiometry stoi = createH2O();
+        MyView v(stoi);
+        typedef MyView::const_iterator CI;
+        ipaca::StoichiometryTraits<MyStoichiometry>::IsotopesAccessorType iAcc;
+        ipaca::IsotopesTraits<MyStoichiometry>::MzAccessorType mzAcc;
+        ipaca::IsotopesTraits<MyStoichiometry>::AbAccessorType abAcc;
+        double masses[] = { 1.0, 2.0, 16.0, 17.0, 18.0 };
+        double freqs[] = { 0.99, 0.01, 0.97, 0.01, 0.02};
+        size_t k = 0;
         for (CI i = v.begin(); i != v.end(); ++i) {
-            shouldEqual(cAcc(*i), 27.3);
+            typedef ipaca::StoichiometryTraits<MyStoichiometry>::IsotopeContainerType IsotopeContainer;
+            const IsotopeContainer& ic = iAcc(*i);
+            typedef IsotopeContainer::const_iterator CI;
+            for (CI j = ic.begin(); j != ic.end(); ++j, ++k) {
+                //std::cerr << k << ": mz: " << mzAcc(*j) << ", ab:" << abAcc(*j) << std::endl;
+                shouldEqual(mzAcc(*j), masses[k]);
+                shouldEqual(abAcc(*j), freqs[k]);
+            }
         }
     }
+
 };
 
 /** The main function that runs the tests for class StoichiometryView.

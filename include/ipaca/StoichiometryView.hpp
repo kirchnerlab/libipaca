@@ -9,18 +9,45 @@
 
 namespace ipaca {
 
+
+/** Compile-time configuration for the \c Stoichiometry adapter.
+ * The general structure is
+ * <pre>
+ * StoichiometryContainerType<
+ *     StoichiometryTupleType<
+ *         IsotopeContainerType<IsotopeType>,
+ *         CountType
+ *     >
+ * >
+ * </pre>
+ * Any stoichiometry class that can be mapped to this structure can be used
+ * with \c libipaca.
+ */
 template<typename T>
 struct StoichiometryTraits
 {
     typedef typename T::iterator iterator_type;
     typedef typename T::const_iterator const_iterator_type;
     typedef typename T::value_type value_type;
+
+    typedef T StoichiometryContainerType;
+    typedef typename T::value_type StoichiometryEntryType;
+    typedef typename T::isotope_container_type IsotopeContainerType;
+    typedef typename IsotopeContainerType::value_type IsotopeType;
+    typedef typename T::count_type CountType;
+
+    typedef typename T::isotopes_accessor IsotopesAccessorType;
+    typedef typename T::count_accessor CountAccessorType;
 };
 
 template<typename T>
-struct StoichiometryValueTraits
+struct IsotopesTraits
 {
-    // must be specified by the user
+    typedef typename T::isotopes_type IsotopeContainerType;
+    typedef typename IsotopeContainerType::value_type IsotopeType;
+
+    typedef typename T::mz_accessor MzAccessorType;
+    typedef typename T::ab_accessor AbAccessorType;
 };
 
 /** A generic view on stoichiometries.
