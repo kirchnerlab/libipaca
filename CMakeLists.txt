@@ -44,9 +44,9 @@ LINK_DIRECTORIES(${Boost_LIBRARY_DIRS})
 
 # Set default compile flags for GCC
 if(CMAKE_COMPILER_IS_GNUCXX)
-    SET(CMAKE_CXX_FLAGS_DEBUG  "-O0 -Wall -Wconversion -ggdb3")
+    SET(CMAKE_CXX_FLAGS_DEBUG  "-O0 -DIPACA_DEBUG -Wall -Wconversion -ggdb3")
     SET(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG -ftree-vectorize -msse2")
-    SET(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-g -O3")
+    SET(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-DIPACA_DEBUG -g -O3")
 endif(CMAKE_COMPILER_IS_GNUCXX)
 
 #############################################################################
@@ -142,7 +142,7 @@ ENDIF (ENABLE_TESTING)
 # build libipaca
 #############################################################################
 
-#ADD_SUBDIRECTORY(src)
+ADD_SUBDIRECTORY(src)
 
 ############################################################################
 # examples

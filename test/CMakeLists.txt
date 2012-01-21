@@ -51,10 +51,8 @@ INCLUDE_DIRECTORIES(
 )
 
 #### Sources
-SET(SRCS_STOICHIOMETRYVIEW StoichiometryView-test.cpp)
 
 #### Tests
-ADD_LIBIPACA_TEST("StoichiometryView" test_stoichiometryview ${SRCS_STOICHIOMETRYVIEW})
 
 LIST(LENGTH memtest_names numtests)
 IF(numtests GREATER 0)

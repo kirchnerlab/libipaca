@@ -1,5 +1,6 @@
 
 SET(SRCS 
+    Mercury7.cpp
 )
 
 ADD_LIBRARY(ipaca ${SRCS})
