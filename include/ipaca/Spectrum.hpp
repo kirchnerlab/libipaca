@@ -21,6 +21,14 @@ namespace detail {
 typedef Isotope SpectrumElement;
 typedef std::vector<SpectrumElement> Spectrum;
 
+/** A stream operator for the Spectrum class.
+ *
+ * @param os The stream.
+ * @param s The spectrum.
+ * @return The stream after adding the spectrum info.
+ */
+std::ostream& operator<<(std::ostream& os, const Spectrum& s);
+
 } // namespace detail
 
 } // namespace ipaca

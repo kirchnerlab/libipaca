@@ -20,7 +20,7 @@ MACRO(ADD_LIBIPACA_TEST name exe src)
     ADD_EXECUTABLE(${exe} ${src})
     
     SET(TEST_LIBS  
-        #        ipaca
+        ipaca
         #${Boost_LIBRARIES}
     )
 
@@ -51,8 +51,12 @@ INCLUDE_DIRECTORIES(
 )
 
 #### Sources
+SET(SRCS_MERCURY7 Mercury7-test.cpp)
+SET(SRCS_STOICHIOMETRY Stoichiometry-test.cpp)
 
 #### Tests
+ADD_LIBIPACA_TEST("Mercury7" test_mercury7 ${SRCS_MERCURY7})
+ADD_LIBIPACA_TEST("Stoichiometry" test_stoichiometry ${SRCS_STOICHIOMETRY})
 
 LIST(LENGTH memtest_names numtests)
 IF(numtests GREATER 0)

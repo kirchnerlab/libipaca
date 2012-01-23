@@ -1,5 +1,5 @@
 /*
- * Mercury7.hpp
+ * Mercury7Impl.hpp
  *
  * Copyright (c) 2007-2011 Marc Kirchner
  * Copyright (c) 2008 Thorben Kroeger
@@ -66,11 +66,12 @@
 
 namespace ipaca {
 
+namespace detail {
 /** Calculates a theoretical isotope distribution from an
  *  elemental composition (stoichiometry).
  *  @ingroup asap
  */
-class Mercury7
+class Mercury7Impl
 {
 public:
     /** Functor method to calculate the theoretical isotope
@@ -124,12 +125,12 @@ private:
         const Double limit, detail::Spectrum& spectrum) const;
 
     /** Convolves two isotope distributions.
-     * @param result The result of the convolution.
      * @param s1 Spectrum on the left hand side of the convolution.
      * @param s2 Spectrum on the right hand side of the convolution.
+     * @param result The result of the convolution.
      */
-    void convolve(detail::Spectrum& result, const detail::Spectrum& s1,
-        const detail::Spectrum& s2) const;
+    void convolve(const detail::Spectrum& s1, const detail::Spectrum& s2,
+        detail::Spectrum& result) const;
 
     /** Prunes sparse isotope distributions based on the observed intensities.
      * @param spectrum A \c detail::Spectrum object.
@@ -140,23 +141,9 @@ private:
      * below the abundance limit.
      */
     void prune(detail::Spectrum& spectrum, const Double limit) const;
-
-    //    /** Get the electron mass, in atomic mass units.
-    //     */
-    //    static Double getElectronMass() const;
-    //
-    //    /** The mass of an electron.
-    //     */
-    //    static const Double ELECTRON_MASS;
-    //
-    //    /** Get the proton mass, in atomic mass units.
-    //     */
-    //    static Double getProtonMass() const;
-    //
-    //    /** The mass of a proton, in atomic mass units (u).
-    //     */
-    //    static const Double PROTON_MASS;
 };
+
+} // namespace detail
 
 } // namespace ipaca
 

@@ -1,6 +1,8 @@
 
 SET(SRCS 
     Mercury7.cpp
+    Stoichiometry.cpp
+    Spectrum.cpp
 )
 
 ADD_LIBRARY(ipaca ${SRCS})

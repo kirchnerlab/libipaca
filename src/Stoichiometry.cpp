@@ -5,6 +5,8 @@
  *
  */
 #include <ipaca/Stoichiometry.hpp>
+#include <cmath>
+#include <iostream>
 
 using namespace ipaca;
 
@@ -36,7 +38,7 @@ void detail::splitStoichiometry(const detail::Stoichiometry& s,
     typedef detail::Stoichiometry::const_iterator CI;
     for (CI i = s.begin(); i != s.end(); ++i) {
         Double integer = trunc(i->count);
-        Double fractional = i->count - intN;
+        Double fractional = i->count - integer;
         if (integer > 0.0) {
             intStoi.push_back(*i);
             intStoi.back().count = integer;
@@ -46,4 +48,15 @@ void detail::splitStoichiometry(const detail::Stoichiometry& s,
             fracStoi.back().count = fractional;
         }
     }
+}
+
+std::ostream& detail::operator<<(std::ostream& os, const detail::Stoichiometry& s)
+{
+    typedef detail::Stoichiometry::const_iterator CI;
+    os << "(";
+    for (CI i = s.begin(); i != s.end(); ++i) {
+        os << "(" << i->isotopes[0].mz << ", " << i->count << ")";
+    }
+    os << ")";
+    return os;
 }

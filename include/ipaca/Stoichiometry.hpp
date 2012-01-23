@@ -10,6 +10,7 @@
 
 #include <ipaca/config.hpp>
 #include <vector>
+#include <iosfwd>
 #include <ipaca/Types.hpp>
 
 namespace ipaca {
@@ -51,7 +52,7 @@ struct Element
 typedef std::vector<Element> Stoichiometry;
 
 //
-// a few free functions (to avoid not using std::vector)
+// a few free functions
 //
 
 /** Check if all entries in a stoichiometry are non-negative and if there is
@@ -72,6 +73,14 @@ Bool isPlausibleStoichiometry(const Stoichiometry& s);
  */
 void splitStoichiometry(const Stoichiometry& s, Stoichiometry& intStoi,
     Stoichiometry& fracStoi);
+
+/** Stream operator.
+ *
+ * @param os A reference to the outstream.
+ * @param s The Stoichiometry to stream.
+ * @return A reference to the same outstream.
+ */
+std::ostream& operator<<(std::ostream& os, const Stoichiometry& s);
 
 } // namespace detail
 

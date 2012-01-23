@@ -12,6 +12,7 @@
 #include <ipaca/Mercury7.hpp>
 #include <cassert>
 #include <cmath>
+
 // switch off the assert() calls in release code
 #ifndef IPACA_DEBUG
 #define NDEBUG
@@ -19,41 +20,31 @@
 
 using namespace ipaca;
 
-// TODO: remove the following if we do not need it.
-//
-///** The mass of an electron, in atomic mass units (u).
-// */
-//const double Mercury7::ELECTRON_MASS = 0.00054857990946;
-//
-///** The mass of a proton, in atomic mass units (u).
-// */
-//const double Mercury7::PROTON_MASS = 1.007276466812;
-//
-//double Mercury7::getElectronMass() const
-//{
-//    return ELECTRON_MASS;
-//}
-//
-//double Mercury7::getProtonMass() const
-//{
-//    return PROTON_MASS;
-//}
-
-void Mercury7::convolve(detail::Spectrum& result, const detail::Spectrum& s1,
-    const detail::Spectrum& s2) const
+void detail::Mercury7Impl::convolve(const detail::Spectrum& s1,
+    const detail::Spectrum& s2, detail::Spectrum& result) const
 {
     // Check if the input is non-empty. We use size() instead of
     // empty() because we need the values later.
     Size n1 = s1.size();
     Size n2 = s2.size();
     if ((n1 + n2) == 0) {
-        // nothing to do
+        result.clear();
+        return;
+    }
+    // If one of the inputs is empty, keep the m/z values but set the
+    // abundances to zero.
+    if (n1 == 0 || n2 == 0) {
+        result = (n1 == 0 ? s2 : s1);
+        typedef detail::Spectrum::iterator IT;
+        for (IT i = result.begin(); i != result.end(); ++i) {
+            i->ab = 0.0;
+        }
         return;
     }
     // No need to clear out the return values, we will overwrite them
     // anyways. Hence, simply make sure the elements exist and that we
     // will not need to reallocate inside the loop.
-    result.resize(n1 + n2);
+    result.resize(n1 + n2 - 1);
     for (size_t k = 0; k < n1 + n2 - 1; k++) {
         double totalAbundance = 0.0;
         double massExpectation = 0.0;
@@ -77,29 +68,37 @@ void Mercury7::convolve(detail::Spectrum& result, const detail::Spectrum& s1,
     }
 }
 
-void Mercury7::prune(detail::Spectrum& s, const double limit) const
+void detail::Mercury7Impl::prune(detail::Spectrum& s, const double limit) const
 {
-    size_t i = 0;
-    // prune from the front; if the monoisotopic mass is pruned, it will be
-    // re-added at the end of the Mercury algorithm 
-    for (size_t i = 0; i < s.size(); i++) {
-        if (s[i].ab > limit) {
+    // This is a private function, hence any call to prune with
+    // a non-positve limit is a programming error. Parameter validity
+    // must be checked in operator() (which is where it comes in).
+    assert(limit > 0.0);
+    // prune from the left
+    typedef detail::Spectrum::const_iterator CI;
+    CI l;
+    for (l = s.begin(); l != s.end(); ++l) {
+        if (l->ab > limit) {
             break;
         }
     }
-    s.erase(s.begin(), s.begin() + i);
-    // prune the end
-    for (i = s.size() - 1; i >= 0; --i) {
-        if (s[i].ab > limit) {
+    // prune from the right
+    typedef detail::Spectrum::const_reverse_iterator RCI;
+    RCI r;
+    for (r = s.rbegin(); r != s.rend(); ++r) {
+        if (r->ab > limit || r.base() == l) {
             break;
         }
     }
-    s.resize(i + 1);
+    // trim down using the swap trick; should be faster than two copies...
+    detail::Spectrum(l, r.base()).swap(s);
 }
 
-void Mercury7::integerMercury(const detail::Stoichiometry& stoichiometry,
-    const double limit, detail::Spectrum& msa) const
+void detail::Mercury7Impl::integerMercury(
+    const detail::Stoichiometry& stoichiometry, const double limit,
+    detail::Spectrum& msa) const
 {
+    assert(limit > 0.0);
     msa.clear();
     detail::Spectrum tmp, esa;
     Bool msa_initialized = false;
@@ -121,7 +120,7 @@ void Mercury7::integerMercury(const detail::Stoichiometry& stoichiometry,
                     // MSA update
                     if (msa_initialized) {
                         // normal update
-                        convolve(tmp, msa, esa);
+                        convolve(msa, esa, tmp);
                         msa = tmp;
                     } else {
                         // initialize MSA=ESA
@@ -135,7 +134,7 @@ void Mercury7::integerMercury(const detail::Stoichiometry& stoichiometry,
                 if (n == 1) {
                     break;
                 }
-                convolve(tmp, esa, esa);
+                convolve(esa, esa, tmp);
                 esa = tmp;
                 prune(esa, limit);
                 n = n >> 1;
@@ -144,9 +143,10 @@ void Mercury7::integerMercury(const detail::Stoichiometry& stoichiometry,
     }
 }
 
-void Mercury7::fractionalMercury(const detail::Stoichiometry& s, double limit,
-    detail::Spectrum& frac) const
+void detail::Mercury7Impl::fractionalMercury(const detail::Stoichiometry& s,
+    double limit, detail::Spectrum& frac) const
 {
+    assert(limit > 0.0);
     frac.clear();
     typedef detail::Stoichiometry::const_iterator SCI;
     for (SCI i = s.begin(); i != s.end(); ++i) {
@@ -172,13 +172,19 @@ void Mercury7::fractionalMercury(const detail::Stoichiometry& s, double limit,
         if (i == s.begin()) {
             frac = esa;
         } else {
-            convolve(frac, esa, temp);
+            convolve(esa, temp, frac);
         }
     }
 }
-detail::Spectrum Mercury7::operator()(
+
+detail::Spectrum detail::Mercury7Impl::operator()(
     const detail::Stoichiometry& stoichiometry, const double limit) const
 {
+    // check the parameters
+    if (limit <= 0.0) {
+        // TODO: figure out the correct error behavior.
+        return detail::Spectrum();
+    }
     // split the stoichiometry into integer and fractional parts
     detail::Stoichiometry intStoi;
     detail::Stoichiometry fracStoi;
@@ -203,8 +209,8 @@ detail::Spectrum Mercury7::operator()(
     // two; otherwise assign the resepctive non-zero contribution.
     detail::Spectrum result;
     if (hasValidIntegerStoichiometry && hasValidFractionalStoichiometry) {
-        Mercury7::convolve(result, intSpec, fracSpec);
-        Mercury7::prune(result, limit);
+        Mercury7Impl::convolve(intSpec, fracSpec, result);
+        Mercury7Impl::prune(result, limit);
     } else {
         if (hasValidIntegerStoichiometry) {
             result = intSpec;
@@ -212,26 +218,10 @@ detail::Spectrum Mercury7::operator()(
             result = fracSpec;
         }
     }
-    /* TODO: decide if we want this functionality in Mercury (or pull it out).
-     if (includeMonoisotopicMass) {
-     // calculate the monoisotopic mass of the compound and check if we
-     // lost it on the way (e.g. due to heavy label incorporation)
-     double monoMass = getMonoisotopicMass(stoi, charge);
-     if ((std::abs)(result[0].mz - monoMass) > 1e-6) {
-     //MSTK_LOG(logDEBUG3) << "[f] " << result_mz[0] << " vs. "
-     //  << monoMass << "; diff=" << (std::abs)(result_mz[0] - monoMass);
-     // with a vector, this requires a copy *duh*
-     detail::SpectrumElement se;
-     se.mz = monoMass;
-     se.ab = 0.0;
-     result.insert(result.begin(), se);
-     }
-     }
-     */
     return result;
 }
 
-double Mercury7::getMonoisotopicMass(
+double detail::Mercury7Impl::getMonoisotopicMass(
     const detail::Stoichiometry& stoichiometry) const
 {
     double mass = 0.0;
@@ -244,7 +234,8 @@ double Mercury7::getMonoisotopicMass(
     return mass;
 }
 
-double Mercury7::getAverageMass(const detail::Stoichiometry& stoichiometry) const
+double detail::Mercury7Impl::getAverageMass(
+    const detail::Stoichiometry& stoichiometry) const
 {
     double avg = 0.0;
     typedef detail::Stoichiometry::const_iterator CI;
@@ -256,6 +247,7 @@ double Mercury7::getAverageMass(const detail::Stoichiometry& stoichiometry) cons
         for (ICI j = i->isotopes.begin(); j != i->isotopes.end(); ++j) {
             entryAvg += j->mz * j->ab;
         }
+        // add to the overall average
         avg += entryAvg;
     }
     return avg;
