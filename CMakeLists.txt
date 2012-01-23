@@ -29,12 +29,10 @@ STRING(TOUPPER ${CMAKE_BUILD_TYPE} CMAKE_BUILD_TYPE)
 # build libraries
 #############################################################################
 # require boost
-#SET(Boost_USE_STATIC_LIBS OFF)
-#SET(Boost_USE_MULTITHREAD OFF)
-#make sure that at least version 1.46.0 is used
-#SET(BOOST_MIN_VERSION "1.46.0")
-#FIND_PACKAGE(Boost ${BOOST_MIN_VERSION} COMPONENTS thread REQUIRED)
-
+SET(Boost_USE_STATIC_LIBS OFF)
+SET(Boost_USE_MULTITHREAD OFF)
+SET(BOOST_MIN_VERSION "1.38.0")
+FIND_PACKAGE(Boost ${BOOST_MIN_VERSION} REQUIRED) # COMPONENTS thread REQUIRED)
 INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS})
 LINK_DIRECTORIES(${Boost_LIBRARY_DIRS})
 
@@ -64,7 +62,6 @@ CONFIGURE_FILE(
 OPTION(ENABLE_TESTING "Compile tests" ON)
 OPTION(ENABLE_COVERAGE "Enable GCov coverage analysis (defines a 'coverage' target and enforces static build of libipaca)" OFF)
 OPTION(ENABLE_EXAMPLES "Compile examples" OFF)
-OPTION(ENABLE_THREADING "Enable threading" FALSE)
 
 #############################################################################
 # global include dirs
@@ -81,11 +78,6 @@ INCLUDE_DIRECTORIES(
 MESSAGE(STATUS "libipaca Git Commit: "${LIBIPACA_VERSION})
 MESSAGE(STATUS "Build type: "${CMAKE_BUILD_TYPE})
 MESSAGE(STATUS "CMAKE_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX}")
-IF(ENABLE_THREADING)
-    MESSAGE(STATUS "Threading enabled")
-ELSE()
-    MESSAGE(STATUS "Threading disabled")   
-ENDIF()
 IF(ENABLE_TESTING)
     MESSAGE(STATUS "Testing enabled")
 ELSE()

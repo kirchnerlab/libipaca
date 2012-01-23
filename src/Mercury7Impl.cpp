@@ -9,7 +9,7 @@
  * Based on the emass implementation of Perttu Haimi.
  * 
  */
-#include <ipaca/Mercury7.hpp>
+#include <ipaca/Mercury7Impl.hpp>
 #include <cassert>
 #include <cmath>
 

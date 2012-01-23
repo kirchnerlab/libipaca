@@ -1,6 +1,6 @@
 
 SET(SRCS 
-    Mercury7.cpp
+    Mercury7Impl.cpp
     Stoichiometry.cpp
     Spectrum.cpp
 )

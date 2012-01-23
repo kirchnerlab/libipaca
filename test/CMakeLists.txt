@@ -52,10 +52,12 @@ INCLUDE_DIRECTORIES(
 
 #### Sources
 SET(SRCS_MERCURY7 Mercury7-test.cpp)
+SET(SRCS_MERCURY7IMPL Mercury7Impl-test.cpp)
 SET(SRCS_STOICHIOMETRY Stoichiometry-test.cpp)
 
 #### Tests
 ADD_LIBIPACA_TEST("Mercury7" test_mercury7 ${SRCS_MERCURY7})
+ADD_LIBIPACA_TEST("Mercury7Impl" test_mercury7impl ${SRCS_MERCURY7IMPL})
 ADD_LIBIPACA_TEST("Stoichiometry" test_stoichiometry ${SRCS_STOICHIOMETRY})
 
 LIST(LENGTH memtest_names numtests)

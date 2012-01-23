@@ -54,8 +54,8 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef __LIBIPACA_INCLUDE_IPACA_MERCURY7_HPP__
-#define __LIBIPACA_INCLUDE_IPACA_MERCURY7_HPP__
+#ifndef __LIBIPACA_INCLUDE_IPACA_MERCURY7IMPL_HPP__
+#define __LIBIPACA_INCLUDE_IPACA_MERCURY7IMPL_HPP__
 #include <ipaca/config.hpp>
 #include <ipaca/Spectrum.hpp>
 #include <ipaca/Stoichiometry.hpp>
