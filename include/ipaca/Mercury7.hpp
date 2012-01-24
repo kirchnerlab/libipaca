@@ -32,6 +32,13 @@ template<typename StoichiometryType, typename SpectrumType>
 class Mercury7
 {
 public:
+    /** The type of particle that carries the charge.
+     */
+    enum Particle
+    {
+        ELECTRON, PROTON
+    };
+
     /** Constructor.
      */
     Mercury7();
@@ -47,8 +54,8 @@ public:
      * sparse/binary convolution algorithm.
      */
     SpectrumType
-    operator()(const StoichiometryType& stoichiometry,
-        const Double limit = 1e-26) const;
+    operator()(const StoichiometryType& stoichiometry, const int charge,
+        const Particle particle, const Double limit = 1e-26) const;
 
     /** calculate the monoisotopic mass of a given stoichiometry
      *  @param stoichiometry The stoichiometry to calculate the mass for.
@@ -80,14 +87,35 @@ Mercury7<StoichiometryType, SpectrumType>::Mercury7() :
 
 template<typename StoichiometryType, typename SpectrumType>
 SpectrumType Mercury7<StoichiometryType, SpectrumType>::operator()(
-    const StoichiometryType& stoichiometry, const Double limit) const
+    const StoichiometryType& stoichiometry, const int charge,
+    const Particle particle, const Double limit) const
 {
+    // convert the user type to our internal type
     detail::Stoichiometry s;
-    typename Traits<StoichiometryType, SpectrumType>::stoichiometry_converter stoi_conv;
+    typename Traits<StoichiometryType, SpectrumType>::stoichiometry_converter
+            stoi_conv;
     stoi_conv(stoichiometry, s);
+    // adjust the stoichiometry for charge and particle type
+
+
+    // Adjust the number of hydrogens.
+    if (charge != 0 && particle == PROTON) {
+        detail::adjustStoichiometryForProtonation<StoichiometryType, SpectrumType>(s, charge);
+    }
     detail::Spectrum result = pImpl_->operator()(s, limit);
+    // Do the charge adjustment. This is the same for all types of charges
+    // because we adjusted the number of hydrogens earlier.
+    if (charge != 0) {
+        Int absCharge = (abs)(charge);
+        Double e = Traits<StoichiometryType, SpectrumType>::getElectronMass();
+        typedef detail::Spectrum::iterator IT;
+        for (IT i = result.begin(); i != result.end(); ++i) {
+            i->mz = (i->mz - (charge * e)) / absCharge;
+        }
+    }
     SpectrumType spectrum;
-    typename Traits<StoichiometryType, SpectrumType>::spectrum_converter spec_conv;
+    typename Traits<StoichiometryType, SpectrumType>::spectrum_converter
+            spec_conv;
     spec_conv(result, spectrum);
     return spectrum;
 }
@@ -97,7 +125,8 @@ Double Mercury7<StoichiometryType, SpectrumType>::getMonoisotopicMass(
     const StoichiometryType& stoichiometry) const
 {
     detail::Stoichiometry s;
-    typename Traits<StoichiometryType, SpectrumType>::stoichiometry_converter stoi_conv;
+    typename Traits<StoichiometryType, SpectrumType>::stoichiometry_converter
+            stoi_conv;
     stoi_conv(stoichiometry, s);
     return pImpl_->getMonoisotopicMass(s);
 }
@@ -107,7 +136,8 @@ Double Mercury7<StoichiometryType, SpectrumType>::getAverageMass(
     const StoichiometryType& stoichiometry) const
 {
     detail::Stoichiometry s;
-    typename Traits<StoichiometryType, SpectrumType>::stoichiometry_converter stoi_conv;
+    typename Traits<StoichiometryType, SpectrumType>::stoichiometry_converter
+            stoi_conv;
     stoi_conv(stoichiometry, s);
     return pImpl_->getAverageMass(s);
 }

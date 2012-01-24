@@ -18,6 +18,10 @@ typedef size_t Size;
 typedef bool Bool;
 typedef std::string String;
 
+enum ChargedParticle {
+    ELECTRON, PROTON
+};
+
 } // namespace ipaca
 
 #endif

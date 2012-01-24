@@ -12,6 +12,7 @@
 #include <ipaca/Mercury7Impl.hpp>
 #include <cassert>
 #include <cmath>
+#include <iostream>
 
 // switch off the assert() calls in release code
 #ifndef IPACA_DEBUG
@@ -107,7 +108,8 @@ void detail::Mercury7Impl::integerMercury(
     typedef detail::Stoichiometry::const_iterator SCI;
     for (SCI iter = stoichiometry.begin(); iter != stoichiometry.end(); ++iter) {
         // number of atoms at iterator position
-        Size n = iter->count;
+        assert(iter->count >= 0.0);
+        Size n = static_cast<Size>(iter->count);
         // if the element is present in the composition,
         // then calculate ESA and update MSA
         if (n) {
@@ -191,11 +193,13 @@ detail::Spectrum detail::Mercury7Impl::operator()(
     detail::splitStoichiometry(stoichiometry, intStoi, fracStoi);
     // check if there is any integer contribution, and calculate the mz and
     // abundance vectors if yes
+    std::cerr << "Mercury7Impl::operator(): got intStoi: " << intStoi << std::endl;
+    std::cerr << "Mercury7Impl::operator(): got fracStoi: " << fracStoi << std::endl;
     detail::Spectrum intSpec;
     bool hasValidIntegerStoichiometry = detail::isPlausibleStoichiometry(
         intStoi);
     if (hasValidIntegerStoichiometry) {
-        integerMercury(stoichiometry, limit, intSpec);
+        integerMercury(intStoi, limit, intSpec);
     }
     // check if there is any fractional contribution and calculate the mz and
     // abundance vectors if yes
