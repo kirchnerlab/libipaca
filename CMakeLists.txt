@@ -176,15 +176,15 @@ SET(CPACK_PACKAGE_DEFAULT_LOCATION ${CMAKE_INSTALL_PREFIX})
 
 
 # headers
-INSTALL(DIRECTORY ${LIBIPACA_SOURCE_DIR}/include/libipaca
+INSTALL(DIRECTORY ${LIBIPACA_SOURCE_DIR}/include/ipaca
     DESTINATION include
     COMPONENT headers
     REGEX "/.git$" EXCLUDE
     PATTERN "config.hpp.cmake" EXCLUDE)
 
 # config.h
-INSTALL(FILES ${LIBIPACA_BINARY_DIR}/include/libipaca/config.hpp
-    DESTINATION include/libipaca
+INSTALL(FILES ${LIBIPACA_BINARY_DIR}/include/ipaca/config.hpp
+    DESTINATION include/ipaca
     COMPONENT headers)
 
 # documentation
