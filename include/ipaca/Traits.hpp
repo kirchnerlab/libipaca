@@ -13,6 +13,8 @@
 #include <ipaca/Types.hpp>
 #include <ipaca/Error.hpp>
 
+#include <algorithm>
+
 namespace ipaca {
 
 namespace detail {
